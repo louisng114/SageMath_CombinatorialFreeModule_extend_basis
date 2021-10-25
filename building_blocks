@@ -1,0 +1,56 @@
+# reconstruction
+
+B = self.basis()
+L = []
+for b in B:
+	D = N.lift(b).monomial_coefficients()
+	L = L + sum(v * self.lift(B[0]).parent().basis()[k] for k, v in D.items())
+reconstruction = self.lift(B[0]).parent().submodule(L)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# extend basis
+
+L1 = (some list provided by the user)
+B = self.basis()
+upper = self.ambient()
+B_upper = self.ambient().basis()
+L2 = []
+for b in B:
+	D = self.lift(b).monomial_coefficients()
+	L2 = L2 + sum(v * B_upper[k] for k, v in D.items())
+new_upper = FormalPolyhedraModule(upper.base_ring(), upper.dimension(), B_upper + L1)
+new_module = new_upper.submodule(L2 + L1)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Lifting and gathering info
+
+M = self
+L1 = (some list provided by the user)
+A = []
+L2 = []
+while (M in Sets().Subobjects()) or (M in Sets().Quotients()):
+    B = M.basis()
+    upper = M.ambient()
+    B_upper = M.ambient().basis()
+    if M in Sets().Subobjects():
+        A = A + ['S']
+        L3 = []
+        for b in B:
+	    D = self.lift(b).monomial_coefficients()
+	    L3 = L3 + sum(v * B_parent[k] for k, v in D.items())
+        L2 = L2 + [L3]
+    if M in Sets().Quotients():
+        A = A + ['Q']
+	L3 = []
+        for b in B_upper:
+            L3 = L3 + [M.lift(M.retract(b)) - B_upper[b]]
+        L2 = L2 + [L3]
+    M = M.ambient()
+new_module = FormalPolyhedraModule(M.base_ring(), M.dimension(), list(M.basis()) + L1)
+While A != []:
+    a = A.pop()
+    if a == 'S':
+        new_module = new_module.submodule(L2.pop() + L1)        
+    if a == 'Q':
+        new_module = new_module.quotient_module(L2.pop())       
+return new_module
