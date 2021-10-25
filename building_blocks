@@ -36,8 +36,8 @@ while (M in Sets().Subobjects()) or (M in Sets().Quotients()):
         A = A + ['S']
         L3 = []
         for b in B:
-	    D = self.lift(b).monomial_coefficients()
-	    L3 = L3 + sum(v * B_parent[k] for k, v in D.items())
+            D = self.lift(b).monomial_coefficients()
+	        L3 = L3 + sum(v * B_parent[k] for k, v in D.items())
         L2 = L2 + [L3]
     if M in Sets().Quotients():
         A = A + ['Q']
