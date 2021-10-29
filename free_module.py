@@ -1150,7 +1150,7 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
                     A = A + ['Q']
                     L3 = []
                     for b in B_ambient:
-                        L3 = L3 + list(M.lift(M.retract(b)) - B_ambient[b])
+                        L3 = L3 + [M.lift(M.retract(b)) - b]
                     L2 = L2 + [L3]
                 M = M.ambient()
             L1_needed = list(set(l for l in L1 if l not in M.basis().keys()))
@@ -1166,9 +1166,15 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
                     L1_B = list(new_module.basis()[l] for l in L1_needed)
                     new_module = new_module.submodule(L4 + L1_B)
                 if a == 'Q':
-                    D = L2.pop().monomial_coefficients()
-                    new_module = new_module.quotient_module(sum(v * new_module[k] for k, v in D.items()))
+                    L3 = L2.pop()
+                    L4 = []
+                    for l in L3:
+                        D = l.monomial_coefficients()
+                        L4 = L4 + [sum(v * new_module.basis()[k] for k, v in D.items())]
+                    L4_no0 = list(l for l in L4 if l != 0)
+                    new_module = new_module.quotient_module(L4_no0)
         return new_module
+
 
 class CombinatorialFreeModule_Tensor(CombinatorialFreeModule):
         """
