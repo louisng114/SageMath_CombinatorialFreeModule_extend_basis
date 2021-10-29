@@ -1124,40 +1124,50 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
             d = {key: coeff for key, coeff in d.items() if coeff}
         return self.element_class(self, d)
 
-    def extend_basis(self, list_of_additional_basis_elements):
+    def extend_basis(self, additional_indices):
         r"""
-        Construct a module with ``list`` added to the basis of ``self``.
+        Construct a module with ``additional_indices`` added to the basis of ``self``.
         """
         M = self
-        M_ambient = M.ambient()
-        A = []
-        L1 = []
-        while (M in Sets().Subobjects()) or (M in Sets().Quotients()):
-            B_ambient = M_ambient.basis()
-            if M in Sets().Subobjects():
-                A = A + ['S']
-                B = M.basis()
-                L2 = []
-                for b in B:
-                    D = M.lift(b).monomial_coefficients()
-                    L2 = L2 + [sum(v * B_ambient[k] for k, v in D.items())]
-                L1 = L1 + [L2]
-            if M in Sets().Quotients():
-                A = A + ['Q']
-                L2 = []
-                for b in B_ambient:
-                    L2 = L2 + [M.lift(M.retract(b)) - B_ambient[b]]
-                L1 = L1 + [L2]
-            M = M.ambient()
-        new_module = CombinatorialFreeModule(M.base_ring(), list(M.basis()) + list_of_additional_basis_elements)
-        while A != []:
-            a = A.pop()
-            if a == 'S':
-                D = L1.pop().monomial_coefficients()
-                new_module = new_module.submodule(sum(v * new_module[k] for k, v in D.items()) + new_module.basis()[l] for l in list_of_additional_basis_elements)        
-            if a == 'Q':
-                D = L1.pop().monomial_coefficients()
-                new_module = new_module.quotient_module(sum(v * new_module[k] for k, v in D.items()))
+        L1 = list(additional_indices)
+        if (M not in Sets().Subobjects()) and (M not in Sets().Quotients()):
+            new_module = CombinatorialFreeModule(M.base_ring(), list(M.basis().keys()) + L1)
+        else:
+            M_ambient = M.ambient()
+            A = []
+            L2 = []
+            while (M in Sets().Subobjects()) or (M in Sets().Quotients()):
+                B_ambient = M_ambient.basis()
+                if M in Sets().Subobjects():
+                    A = A + ['S']
+                    B = M.basis()
+                    L3 = []
+                    for b in B:
+                        D = M.lift(b).monomial_coefficients()
+                        L3 = L3 + [sum(v * B_ambient[k] for k, v in D.items())]
+                    L2 = L2 + [L3]
+                if M in Sets().Quotients():
+                    A = A + ['Q']
+                    L3 = []
+                    for b in B_ambient:
+                        L3 = L3 + list(M.lift(M.retract(b)) - B_ambient[b])
+                    L2 = L2 + [L3]
+                M = M.ambient()
+            L1_needed = list(set(l for l in L1 if l not in M.basis().keys()))
+            new_module = CombinatorialFreeModule(M.base_ring(), L1_needed + list(M.basis().keys()))
+            while A != []:
+                a = A.pop()
+                if a == 'S':
+                    L3 = L2.pop()
+                    L4 = []
+                    for l in L3:
+                        D = l.monomial_coefficients()
+                        L4 = L4 + [sum(v * new_module.basis()[k] for k, v in D.items())]
+                    L1_B = list(new_module.basis()[l] for l in L1_needed)
+                    new_module = new_module.submodule(L4 + L1_B)
+                if a == 'Q':
+                    D = L2.pop().monomial_coefficients()
+                    new_module = new_module.quotient_module(sum(v * new_module[k] for k, v in D.items()))
         return new_module
 
 class CombinatorialFreeModule_Tensor(CombinatorialFreeModule):
