@@ -1133,11 +1133,10 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
         if (M not in Sets().Subobjects()) and (M not in Sets().Quotients()):
             new_module = CombinatorialFreeModule(M.base_ring(), list(M.basis().keys()) + L1)
         else:
-            M_ambient = M.ambient()
             A = []
             L2 = []
             while (M in Sets().Subobjects()) or (M in Sets().Quotients()):
-                B_ambient = M_ambient.basis()
+                B_ambient = M.ambient().basis()
                 if M in Sets().Subobjects():
                     A = A + ['S']
                     B = M.basis()
@@ -1154,7 +1153,9 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
                     L2 = L2 + [L3]
                 M = M.ambient()
             L1_needed = list(set(l for l in L1 if l not in M.basis().keys()))
-            new_module = CombinatorialFreeModule(M.base_ring(), L1_needed + list(M.basis().keys()))
+            new_module = CombinatorialFreeModule(M.base_ring(), list(M.basis().keys()) + L1_needed)
+            on_basis = lambda i: new_module.monomial(i)
+            injection = M.module_morphism(on_basis, codomain=new_module)
             while A != []:
                 a = A.pop()
                 if a == 'S':
@@ -1165,6 +1166,7 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
                         L4 = L4 + [sum(v * new_module.basis()[k] for k, v in D.items())]
                     L1_B = list(new_module.basis()[l] for l in L1_needed)
                     new_module = new_module.submodule(L4 + L1_B)
+                    L1_needed = list(list(new_module.retract(new_module.ambient().basis()[l]).monomial_coefficients())[0] for l in L1_needed)
                 if a == 'Q':
                     L3 = L2.pop()
                     L4 = []
@@ -1173,6 +1175,7 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
                         L4 = L4 + [sum(v * new_module.basis()[k] for k, v in D.items())]
                     L4_no0 = list(l for l in L4 if l != 0)
                     new_module = new_module.quotient_module(L4_no0)
+                    L1_needed = list(list(new_module.retract(new_module.ambient().basis()[l]).monomial_coefficients())[0] for l in L1_needed)
         return new_module
 
 
