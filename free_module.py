@@ -1126,11 +1126,14 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
 
     def extend_basis(self, additional_indices):
         r"""
-        Construct a module with ``additional_indices`` added to the basis of ``self``.
+        Construct the canonical morphism between ``self`` and the module with ``additional_indices`` added to the basis of ``self``.
+
+        EXAMPLES
         """
         M = self
         L1 = list(additional_indices)
         if (M not in Sets().Subobjects()) and (M not in Sets().Quotients()):
+            L1_needed = list(set(l for l in L1 if l not in M.basis().keys()))
             new_module = CombinatorialFreeModule(M.base_ring(), list(M.basis().keys()) + L1)
         else:
             A = []
@@ -1138,24 +1141,22 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
             while (M in Sets().Subobjects()) or (M in Sets().Quotients()):
                 B_ambient = M.ambient().basis()
                 if M in Sets().Subobjects():
-                    A = A + ['S']
+                    A.append('S')
                     B = M.basis()
                     L3 = []
                     for b in B:
                         D = M.lift(b).monomial_coefficients()
-                        L3 = L3 + [sum(v * B_ambient[k] for k, v in D.items())]
-                    L2 = L2 + [L3]
+                        L3.append(sum(v * B_ambient[k] for k, v in D.items()))
+                    L2.append(L3)
                 if M in Sets().Quotients():
-                    A = A + ['Q']
+                    A.append('Q')
                     L3 = []
                     for b in B_ambient:
-                        L3 = L3 + [M.lift(M.retract(b)) - b]
-                    L2 = L2 + [L3]
+                        L3.append(M.lift(M.retract(b)) - b)
+                    L2.append(L3)
                 M = M.ambient()
             L1_needed = list(set(l for l in L1 if l not in M.basis().keys()))
             new_module = CombinatorialFreeModule(M.base_ring(), list(M.basis().keys()) + L1_needed)
-            on_basis = lambda i: new_module.monomial(i)
-            injection = M.module_morphism(on_basis, codomain=new_module)
             while A != []:
                 a = A.pop()
                 if a == 'S':
@@ -1163,8 +1164,8 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
                     L4 = []
                     for l in L3:
                         D = l.monomial_coefficients()
-                        L4 = L4 + [sum(v * new_module.basis()[k] for k, v in D.items())]
-                    L1_B = list(new_module.basis()[l] for l in L1_needed)
+                        L4.append(sum(v * new_module.basis()[k] for k, v in D.items()))
+                    L1_B = [new_module.basis()[l] for l in L1_needed]
                     new_module = new_module.submodule(L4 + L1_B)
                     L1_needed = list(list(new_module.retract(new_module.ambient().basis()[l]).monomial_coefficients())[0] for l in L1_needed)
                 if a == 'Q':
@@ -1172,12 +1173,13 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
                     L4 = []
                     for l in L3:
                         D = l.monomial_coefficients()
-                        L4 = L4 + [sum(v * new_module.basis()[k] for k, v in D.items())]
-                    L4_no0 = list(l for l in L4 if l != 0)
+                        L4.append(sum(v * new_module.basis()[k] for k, v in D.items()))
+                    L4_no0 = [l for l in L4 if l != 0]
                     new_module = new_module.quotient_module(L4_no0)
                     L1_needed = list(list(new_module.retract(new_module.ambient().basis()[l]).monomial_coefficients())[0] for l in L1_needed)
-        return new_module
-
+            on_basis = lambda i: new_module.monomial(i)
+            canonical_morphism = self.module_morphism(on_basis, codomain=new_module)
+        return canonical_morphism
 
 class CombinatorialFreeModule_Tensor(CombinatorialFreeModule):
         """
