@@ -1129,7 +1129,8 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
         Construct the canonical morphism between ``self`` and the module with
         ``additional_indices`` added to the basis of ``self``. Note that if
         ``self`` is part of a submodule, the additional indices are renamed
-        (see EXAMPLES).
+        (see EXAMPLES). Also, this method only works for finite-dimensional
+        modules.
 
         INPUT::
 
