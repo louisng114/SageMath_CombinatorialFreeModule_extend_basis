@@ -1197,7 +1197,7 @@ class CombinatorialFreeModule(UniqueRepresentation, Module, IndexedGenerators):
             for l in L1:
                 if l not in L1_nodup and l not in M.basis().keys():
                     L1_nodup.append(l)
-            new_module = CombinatorialFreeModule(M.base_ring(), list(M.basis().keys()) + L1_nodup)
+            new_module = M.extend_basis(L1).codomain()
             while A != []:
                 a = A.pop()
                 if a == 'S':
